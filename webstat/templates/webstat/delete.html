@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Deleting..
+{% endblock %}
+
+{% block content %}
+    <br><br><br><br><br><br><br>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Confirm Deleting {{ coin.name }}" style="font-size: 1.3em;">
+    </form>
+
+    <br><br><br><br><br><br><br>
+    <script>
+        {{ close }}
+    </script>
+{% endblock %}

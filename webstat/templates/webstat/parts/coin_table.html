@@ -1,0 +1,104 @@
+{% load humanize %}
+{% load static %}
+<table style="width: 50%;">
+    <tr>
+        <th width="100px">
+            Name
+        </th>
+        <th>
+            Price
+        </th>
+        <th>
+            Volume
+        </th>
+        <th>
+            MarketCap
+        </th>
+        <th>
+            FDV
+        </th>
+    </tr>
+    <tr>
+        <td>
+            {{ coin.name }}
+        </td>
+
+
+        <td>{{ coin.price }}</td>
+
+        <td>
+            {{ coin.volume|intcomma }}
+        </td>
+        <td>
+            {% if not coin.market_cap is Null %}
+                {{ coin.market_cap|intcomma }}
+            {% endif %}
+        </td>
+        <td>
+            {% if not coin.fdv is Null %}
+                {{ coin.fdv|intcomma }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr style="height: 25px;"></tr>
+    <tr>
+        <th>
+            Symbol
+        </th>
+
+        <th>
+            Links
+        </th>
+        <th>
+            Score
+        </th>
+        <th>
+            Coeff MC
+        </th>
+        <th>
+            Coeff FDV
+        </th>
+    </tr>
+    <tr>
+        <td>{{ coin.symbol }}</td>
+        <td>
+            <a href="https://www.coingecko.com/en/coins/{{ coin.coingecko_id }}"
+               target="_blank" style="text-decoration: none; padding-right: 14px;">
+                <img src="{% static "webstat/coingecko_logo.png" %}" alt="coingecko logo"
+                     width="17px" height="17spx">
+            </a>
+            {% if not coin.twitter_id is Null %}
+                <a href="https://twitter.com/{{ coin.twitter_id }}"
+                   target="_blank" style="text-decoration: none; padding-right: 14px;">
+                    <img src="{% static "webstat/twitter_logo.png" %}" alt="twitter logo"
+                         width="17px" height="17spx">
+                </a>
+
+            {% endif %}
+            {% if not coin.site is Null %}
+                <a href="{{ coin.site }}" target="_blank"
+                   style="text-decoration: none;">
+                    <img src="{% static "webstat/site_icon.png" %}" alt="site logo"
+                         width="17px" height="17spx">
+                </a>
+            {% endif %}
+        </td>
+        <td>
+            {% if not coin.twitter_score is Null %}
+                <a href="https://twitterscore.io/twitter/{{ coin.twitter_id }}">
+                    {{ coin.twitter_score }}
+                </a>
+            {% endif %}
+        </td>
+        <td>
+            {% if not coin.coefficient_mc is Null %}
+                {{ coin.coefficient_mc|floatformat:2 }}
+            {% endif %}
+        </td>
+        <td>
+            {% if not coin.coefficient_fdv is Null %}
+                {{ coin.coefficient_fdv|floatformat:2 }}
+            {% endif %}
+        </td>
+    </tr>
+</table>

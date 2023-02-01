@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %} Stat Info {% endblock %}
+
+
+{% block content %}
+
+    <div>
+        {% if form %}
+            <form action="#filter-form" method="post" id="filter-form">
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <td>
+                            <table>
+                                <th colspan="4">Market Cap</th>
+                                <tr>
+                                    <td>min</td>
+                                    <td>{{ form.min_market_cap }}</td>
+                                    <td>{{ form.max_market_cap }}</td>
+                                    <td>max</td>
+                                </tr>
+
+                                <th colspan="4">FDV</th>
+                                <tr>
+                                    <td>min</td>
+                                    <td>{{ form.min_fdv }}</td>
+                                    <td>{{ form.max_fdv }}</td>
+                                    <td>max</td>
+                                </tr>
+
+
+                                <th colspan="4">Volume</th>
+                                <tr>
+                                    <td>min</td>
+                                    <td>{{ form.min_volume }}</td>
+                                    <td>{{ form.max_volume }}</td>
+                                    <td>max</td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <table>
+                                <th colspan="4">Score</th>
+                                <tr>
+                                    <td>min</td>
+                                    <td>{{ form.min_score }}</td>
+                                    <td>{{ form.max_score }}</td>
+                                    <td>max</td>
+                                </tr>
+
+                                <th colspan="4">Coefficient MC</th>
+                                <tr>
+                                    <td>min</td>
+                                    <td>{{ form.min_coeff_mc }}</td>
+                                    <td>{{ form.max_coeff_mc }}</td>
+                                    <td>max</td>
+                                </tr>
+
+                                <th colspan="4">Coefficient FDV</th>
+                                <tr>
+                                    <td>min</td>
+                                    <td>{{ form.min_coeff_fdv }}</td>
+                                    <td>{{ form.max_coeff_fdv }}</td>
+                                    <td>max</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <tr>
+                        <td style="width: 250px; height: 40px;">Name contains:</td>
+                        <td style="width: 250px; height: 40px;">Lines</td>
+                        <td style="width: 250px; height: 40px;">Order by</td>
+                    </tr>
+                    <tr>
+                        <td> {{ form.contains }} </td>
+                        <td> {{ form.lines }} </td>
+                        <td> {{ form.order_by }} </td>
+                    </tr>
+                </table>
+
+                <br>
+                <input type="submit" value="Apply">
+            </form>
+
+            {% if form.errors %}
+                <h4>Errors:</h4>
+                {% for error_field, error_message in form.errors.items %}
+                    <p style="text-decoration-color: red;">
+                        {{ error_message|striptags }}
+                    </p>
+                {% endfor %}
+            {% endif %}
+
+        {% endif %}
+    </div>
+
+    {% if crypto %}
+        <div style="width: 70%; border-bottom: 1px solid #a8a7a8; padding: 15px; margin: auto;"></div>
+        <br>
+
+        <table style="width: 90%;">
+            <tr>
+                <th>
+                    #
+                </th>
+                <th width="100px">
+                    Name
+                </th>
+                <th>
+                    Symbol
+                </th>
+                <th>
+                    Price
+                </th>
+                <th>
+                    MarketCap
+                </th>
+                <th>
+                    FDV
+                </th>
+                <th>
+                    Volume
+                </th>
+                <th>
+                    Links
+                </th>
+                <th>
+                    Score
+                </th>
+                <th>
+                    Coeff MC
+                </th>
+                <th>
+                    Coeff FDV
+                </th>
+                {% if user.is_superuser %}
+                    <th>
+                        Controls
+                    </th>
+                {% endif %}
+            </tr>
+            {% for coin in crypto %}
+                {% load humanize %}
+                {% load static %}
+
+                <tr>
+                    <td>
+                        {{ forloop.counter }}
+                    </td>
+                    <td style="text-align: left;">
+                        {% if user.is_superuser %}
+                            <a href="{% url "coin" coin.pk %}">{{ coin.name }}</a>
+                        {% else %}
+                            {{ coin.name }}
+                        {% endif %}
+                    </td>
+
+                    <td>{{ coin.symbol }}</td>
+
+                    <td>{{ coin.price }}</td>
+
+                    <td>
+                        {% if not coin.market_cap is Null %}
+                            {{ coin.market_cap|intcomma }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not coin.fdv is Null %}
+                            {{ coin.fdv|intcomma }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ coin.volume|intcomma }}
+                    </td>
+                    <td style="text-align: left; width: 100px;">
+                        <a href="https://www.coingecko.com/en/coins/{{ coin.coingecko_id }}"
+                           target="_blank" style="text-decoration: none; padding-right: 14px;">
+                            <img src="{% static "webstat/coingecko_logo.png" %}" alt="coingecko logo"
+                                 width="17px" height="17spx">
+                        </a>
+                        {% if not coin.twitter_id is Null %}
+                            <a href="https://twitter.com/{{ coin.twitter_id }}"
+                               target="_blank" style="text-decoration: none; padding-right: 14px;">
+                                <img src="{% static "webstat/twitter_logo.png" %}" alt="twitter logo"
+                                     width="17px" height="17spx">
+                            </a>
+
+                        {% endif %}
+                        {% if not coin.site is Null %}
+                            <a href="{{ coin.site }}" target="_blank"
+                               style="text-decoration: none;">
+                                <img src="{% static "webstat/site_icon.png" %}" alt="site logo"
+                                     width="17px" height="17spx">
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not coin.twitter_score is Null %}
+                            <a href="https://twitterscore.io/twitter/{{ coin.twitter_id }}">
+                                {{ coin.twitter_score }}
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not coin.coefficient_mc is Null %}
+                            {{ coin.coefficient_mc|floatformat:2 }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not coin.coefficient_fdv is Null %}
+                            {{ coin.coefficient_fdv|floatformat:2 }}
+                        {% endif %}
+                    </td>
+                    {% if user.is_superuser %}
+                        <td>
+                            <a href="{% url "update" coin.pk %}" target="_blank">Upd</a> -
+                            <a href="{% url "delete" coin.pk %}" target="_blank">Del</a>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+{% endblock %}

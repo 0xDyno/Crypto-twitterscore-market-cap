@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %}</title>
+    <style>
+        table {
+            margin: auto;
+        }
+
+        table td {
+            padding: 5px;
+        }
+
+        table th {
+            padding: 5px;
+        }
+
+        {% block custom_style %}{% endblock %}
+    </style>
+</head>
+<body style="text-align: center; background-color: antiquewhite;">
+
+<div style="padding-bottom: 20px">
+    <h1>Score Coefficient Map</h1>
+    <br>
+    <table style="padding: 10px; font-size: 1.2em; width: 50%;">
+        <tr>
+            <th width="120px">
+                <a href="{% url "index" %}">Main</a>
+            </th>
+            <th width="120px">
+                <a href="{% url "stat" %}">Table</a>
+            </th>
+                {% if user.is_superuser %}
+                    <th width="120px">
+                        <a href="{% url "control" %}">Control Panel</a>
+                    </th>
+                {% endif %}
+        </tr>
+
+    </table>
+    <hr>
+</div>
+
+{% if message %}
+    <p style="text-decoration-color: red">{{ message }}</p>
+{% endif %}
+
+{# Content #}
+<div>
+    {% block content %}{% endblock %}
+</div>
+
+{# Footer #}
+{#<div style="padding-top: 20px">#}
+{#    <div>#}
+{#        <hr>#}
+{#        <p>Stomping on plagiarism since 20XX</p>#}
+{#    </div>#}
+{#</div>#}
+
+</body>
+</html>

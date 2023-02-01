@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %} {{ coin.name }} {% endblock %}
+
+{% block content %}
+    {% load humanize %}
+    {% load static %}
+
+    {% include "webstat/parts/coin_table.html" %}
+
+    {% if user.is_superuser %}
+        <br>
+        <form method="post">
+            {% csrf_token %}
+            <input type="submit" value="Update">
+            <a href="{% url "delete" coin.pk %}" target="_blank">
+                <input type="button" value="Delete">
+            </a>
+
+        </form>
+    {% endif %}
+
+{% endblock %}
