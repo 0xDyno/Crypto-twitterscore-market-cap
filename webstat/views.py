@@ -1,22 +1,27 @@
 from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Q
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
 from django.shortcuts import get_object_or_404
-from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render
 from django.urls import reverse
 
 from .daemons import start_update_coin_daemon
 from .daemons import start_update_score_daemon
-from .forms import FilterForm
-from .forms import ControlForm
 from .forms import CoinForm
+from .forms import ControlForm
+from .forms import FilterForm
 from .models import CryptoModel
 from .models import DaemonModel
-from .utils import update_coin
 from .utils import add_new_coin
+from .utils import update_coin
+from .utils import custom_sort
 
 DEFAULT_FILTERS = {"order_by": FilterForm.ORDER_CHOICES[0], "lines": 100}
+DEFAULT_ORDER_BY = [
+    "-market_cap", "market_cap",
+    "-fdv", "fdv",
+]
 
 
 def index_view(request):
@@ -92,14 +97,17 @@ def stat_view(request):
             crypto = crypto.filter(Q(name__icontains=contains) | Q(symbol__icontains=contains))
         
         # Order by
-        crypto = crypto.order_by(form.cleaned_data.get("order_by"))
-
+        order_by = form.cleaned_data.get("order_by")
+        if order_by in DEFAULT_ORDER_BY:
+            crypto = crypto.order_by(order_by)
+        else:
+            crypto = custom_sort(order_by, crypto)
+            
         lines = form.cleaned_data.get("lines")
         if lines:
             lines = lines if lines <= len(crypto) else len(crypto)
             crypto = crypto[:lines]
-        
-        
+            
     
     context = {"crypto": crypto, "form": form}
     return render(request, "webstat/stat.html", context=context)
@@ -205,6 +213,6 @@ def control_view(request):
         "score_current_update": daemon.score_current_update,
         "score_message": daemon.score_message,
     }
-        
+    
     context = {"form": form, "info": info}
     return render(request, "webstat/control.html", context=context)

@@ -178,3 +178,17 @@ def __update_twitter_score(coin, score):
             coin.twitter_score = 0
     else:
         coin.twitter_score = score
+        
+
+def custom_sort(sort_type: str, crypto: list):
+    if "coefficient_mc" in sort_type:
+        sort_lambda = lambda x: 0 if x.get_coeff_mc() is None else x.get_coeff_mc()
+    elif "coefficient_fdv" in sort_type:
+        sort_lambda = lambda x: 0 if x.get_coeff_fdv() is None else x.get_coeff_fdv()
+    else:
+        return
+        
+    if sort_type.startswith("-"):
+        return sorted(crypto, key=sort_lambda, reverse=True)
+    else:
+        return sorted(crypto, key=sort_lambda)

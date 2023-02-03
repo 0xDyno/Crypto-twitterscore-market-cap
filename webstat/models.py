@@ -52,7 +52,7 @@ class CryptoModel(models.Model):
     def get_coeff_mc(self):
         if self.twitter_score is not None and self.market_cap is not None:
             if self.twitter_score < 1:
-                return 0
+                return None
             return self.twitter_score / self.market_cap * 1000000
         else:
             return None
@@ -60,7 +60,7 @@ class CryptoModel(models.Model):
     def get_coeff_fdv(self):
         if self.twitter_score is not None and self.fdv is not None:
             if self.twitter_score < 1:
-                return 0
+                return None
             return self.twitter_score / self.fdv * 1000000
         else:
             return None
@@ -69,12 +69,4 @@ class CryptoModel(models.Model):
     def one_time(cls):
         all = cls.objects.all()
         for c in all:
-            if c.market_cap is not None:
-                if c.market_cap < 1:
-                    c.market_cap = None
-                    c.save()
-            
-            if c.fdv is not None:
-                if c.fdv < 1:
-                    c.fdv = None
-                    c.save()
+            pass
