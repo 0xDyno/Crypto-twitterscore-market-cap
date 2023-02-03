@@ -1,3 +1,5 @@
+from django.contrib import messages
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -7,10 +9,12 @@ from django.urls import reverse
 from .daemons import start_update_coin_daemon
 from .daemons import start_update_score_daemon
 from .forms import FilterForm
-from .forms import DaemonForm
+from .forms import ControlForm
+from .forms import CoinForm
 from .models import CryptoModel
 from .models import DaemonModel
 from .utils import update_coin
+from .utils import add_new_coin
 
 DEFAULT_FILTERS = {"order_by": FilterForm.ORDER_CHOICES[0], "lines": 100}
 
@@ -21,8 +25,8 @@ def index_view(request):
 
 def stat_view(request):
     if request.method != "GET" and request.method != "POST":
-        message = f"Not valid Method. I accept only GET and POST, you gave {request.method}"
-        return render(request, "webstat/stat.html", context={"message": message})
+        messages.error(request, f"Not valid Method. I accept only GET and POST, you gave {request.method}")
+        return render(request, "webstat/stat.html")
     
     crypto = CryptoModel.objects.all()
     
@@ -42,50 +46,50 @@ def stat_view(request):
         
         # Filters
         min_mc = form.cleaned_data.get("min_market_cap")
-        if min_mc:
+        if min_mc is not None:
             crypto = crypto.filter(market_cap__gte=min_mc)
         max_mc = form.cleaned_data.get("max_market_cap")
-        if max_mc:
+        if max_mc is not None:
             crypto = crypto.filter(market_cap__lte=max_mc)
             
         min_fdv = form.cleaned_data.get("min_fdv")
-        if min_fdv:
+        if min_fdv is not None:
             crypto = crypto.filter(fdv__gte=min_fdv)
         max_fdc = form.cleaned_data.get("max_fdv")
-        if max_fdc:
+        if max_fdc is not None:
             crypto = crypto.filter(fdv__lte=max_fdc)
         
         min_volume = form.cleaned_data.get("min_volume")
-        if min_volume:
+        if min_volume is not None:
             crypto = crypto.filter(volume__gte=min_volume)
         max_volume = form.cleaned_data.get("max_volume")
-        if max_volume:
+        if max_volume is not None:
             crypto = crypto.filter(volume__lte=max_volume)
             
         min_coeff_mc = form.cleaned_data.get("min_coeff_mc")
-        if min_coeff_mc:
+        if min_coeff_mc is not None:
             crypto = crypto.filter(coefficient_mc__gte=min_coeff_mc)
         max_coeff_mc = form.cleaned_data.get("max_coeff_mc")
-        if max_coeff_mc:
+        if max_coeff_mc is not None:
             crypto = crypto.filter(coefficient_mc__lte=max_coeff_mc)
 
         min_coeff_fdv = form.cleaned_data.get("min_coeff_fdv")
-        if min_coeff_fdv:
+        if min_coeff_fdv is not None:
             crypto = crypto.filter(coefficient_fdv__gte=min_coeff_fdv)
         max_coeff_fdv = form.cleaned_data.get("max_coeff_fdv")
-        if max_coeff_fdv:
+        if max_coeff_fdv is not None:
             crypto = crypto.filter(coefficient_fdv__lte=max_coeff_fdv)
             
         min_score = form.cleaned_data.get("min_score")
-        if min_score:
+        if min_score is not None:
             crypto = crypto.filter(twitter_score__gte=min_score)
         max_score = form.cleaned_data.get("max_score")
-        if max_score:
+        if max_score is not None:
             crypto = crypto.filter(twitter_score__lte=max_score)
             
         contains = form.cleaned_data.get("contains")
-        if contains:
-            crypto = crypto.filter(name__contains=contains)
+        if contains is not None:
+            crypto = crypto.filter(Q(name__icontains=contains) | Q(symbol__icontains=contains))
         
         # Order by
         crypto = crypto.order_by(form.cleaned_data.get("order_by"))
@@ -101,23 +105,45 @@ def stat_view(request):
     return render(request, "webstat/stat.html", context=context)
 
 
+@staff_member_required
 def coin_view(request, pk):
     coin = get_object_or_404(CryptoModel, pk=pk)
-    context = {"coin": coin}
+    initial = {
+        "twitter": coin.twitter_id if coin.twitter_id is not None else "",
+        "twitter_score": coin.twitter_score if coin.twitter_score is not None else 0,
+    }
+    if request.method == "GET":
+        form = CoinForm(initial=initial)
     
     if request.method == "POST":
-        message = update_coin(coin)
-        context["message"] = message
-    
+        form = CoinForm(request.POST)
+        if form.is_valid():
+            twitter = form.cleaned_data.get("twitter")
+            if len(twitter) < 16:
+                coin.twitter_id = twitter
+            else:
+                messages.error(request, message="Twitter is too long")
+            
+            coin.twitter_score = form.cleaned_data.get("twitter_score")
+            coin.save()
+        else:
+            messages.error(request, "Not valid")
+
+    context = {"coin": coin, "form": form}
     return render(request, "webstat/coin.html", context=context)
 
 
 @staff_member_required
 def update_view(request, pk):
     coin = CryptoModel.objects.get(pk=pk)
-    message = update_coin(coin)
+    res = update_coin(coin)
     
-    return render(request, "webstat/coin.html", context={"coin": coin, "message": message})
+    if res:
+        messages.success(request, f"{coin.symbol} was updated.")
+    else:
+        messages.error(request, f"{coin.symbol} wasn't updated. Try again later.")
+    
+    return HttpResponseRedirect(reverse("coin", kwargs={"pk": pk}))
 
 
 @staff_member_required
@@ -139,7 +165,7 @@ def control_view(request):
     initial = {"coins_update_status": daemon.coins_update_status, "score_update_status": daemon.score_update_status}
     
     if request.method == "POST":
-        form = DaemonForm(data=request.POST)
+        form = ControlForm(data=request.POST)
         if form.is_valid():
             coins_status = form.cleaned_data.get("coins_update_status")
             if coins_status != daemon.coins_update_status:
@@ -154,10 +180,23 @@ def control_view(request):
                 daemon.save()
                 if score_status:
                     start_update_score_daemon()
+                    
+            new_coin = form.cleaned_data.get("new_coin")
+            if new_coin:
+                try:
+                    result = add_new_coin(new_coin)
+    
+                    if result:
+                        messages.success(request, message="New coin added.")
+                        return HttpResponseRedirect(reverse("coin", kwargs={"pk": result.pk}))
+                    else:
+                        messages.error(request, message="Wasn't able to add coin")
+                except Exception as e:
+                    messages.error(request, message=f"Unknown error occurred: {str(e)}")
             
             return HttpResponseRedirect(reverse("control"))
 
-    form = DaemonForm(initial=initial)
+    form = ControlForm(initial=initial)
     info = {
         "coins_total_updated": daemon.coins_total_updated,
         "coins_current_update": daemon.coins_current_update,

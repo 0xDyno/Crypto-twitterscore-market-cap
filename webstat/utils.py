@@ -3,6 +3,8 @@ from time import sleep
 import requests
 from bs4 import BeautifulSoup
 
+from .models import CryptoModel
+
 
 def convert_price(price) -> str:
     """
@@ -66,41 +68,56 @@ def get_data_from_dicts(data, *args, index=0):
         return None
 
 
+def add_new_coin(coingecko_id) -> CryptoModel or None:
+    try:
+        data = get_coin_data(coingecko_id)
+    except ConnectionError:
+        return None
+    
+    new_coin = CryptoModel()
+    new_coin.coingecko_id = coingecko_id
+    new_coin.symbol = data.get("symbol")
+    new_coin.name = data.get("name")
+    __update_coin_data(new_coin, data)
+    new_coin.save()
+    
+    score = __get_twitter_score(new_coin.twitter_id)
+    __update_twitter_score(new_coin, score)
+    new_coin.save()
+    
+    return new_coin
+
+
 def update_coin(coin):
     try:
         __update_coin_data(coin)
     except ConnectionError:
-        return f"{coin.symbol} wasn't updated. Try again later."
+        return False
     
     score = __get_twitter_score(coin.twitter_id)
-    
     __update_twitter_score(coin, score)
     
     coin.save()
-    
-    return f"{coin.symbol} was updated."
+    return True
 
 
-def __update_coin_data(coin):
-    url = "https://api.coingecko.com/api/v3/coins/" + coin.coingecko_id + "?market_data=true" + \
-          "&community_data=false&developer_data=false&sparkline=false&localization=false&tickers=false"
-    content = requests.get(url)
-    
-    if content.status_code != 200:
-        sleep(2)
-        content = requests.get(url)
-        if content.status_code != 200:
-            raise ConnectionError(f"Error, code {content.status_code}")
-
-    data = content.json()
+def __update_coin_data(coin, data=None):
+    if not data:
+        data = get_coin_data(coin.coingecko_id)
 
     mc = get_data_from_dicts(data, "market_data", "market_cap", "usd")
     fdv = get_data_from_dicts(data, "market_data", "fully_diluted_valuation", "usd")
     volume = get_data_from_dicts(data, "market_data", "total_volume", "usd")
     price = get_data_from_dicts(data, "market_data", "current_price", "usd")
 
-    coin.market_cap = mc if mc is not None else coin.market_cap
-    coin.fdv = fdv if fdv is not None else coin.fdv
+    if mc is not None:
+        if mc > 1:
+            coin.market_cap = mc
+            
+    if fdv is not None:
+        if fdv > 1:
+            coin.fdv = fdv
+    
     coin.volume = volume if volume is not None else coin.volume
     coin.price = convert_price(price) if price is not None else coin.price
 
@@ -120,6 +137,20 @@ def __update_coin_data(coin):
             coin.site = site
         elif isinstance(site, list) and len(site[0]) < 200:
             coin.site = site[0]
+            
+
+def get_coin_data(coingecko_id):
+    url = "https://api.coingecko.com/api/v3/coins/" + coingecko_id + "?market_data=true" + \
+          "&community_data=false&developer_data=false&sparkline=false&localization=false&tickers=false"
+    content = requests.get(url)
+    
+    if content.status_code != 200:
+        sleep(2)
+        content = requests.get(url)
+        if content.status_code != 200:
+            raise ConnectionError(f"Error, code {content.status_code}")
+    
+    return content.json()
 
 
 def __get_twitter_score(twitter):
@@ -147,13 +178,3 @@ def __update_twitter_score(coin, score):
             coin.twitter_score = 0
     else:
         coin.twitter_score = score
-    
-    if coin.twitter_score < 1:
-        coin.coefficient_mc = 0
-        coin.coefficient_fdv = 0
-    else:
-        if coin.market_cap:
-            coin.coefficient_mc = coin.twitter_score / (coin.market_cap / 1000000)
-        
-        if coin.fdv:
-            coin.coefficient_fdv = coin.twitter_score / (coin.fdv / 1000000)

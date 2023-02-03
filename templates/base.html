@@ -32,33 +32,27 @@
             <th width="120px">
                 <a href="{% url "stat" %}">Table</a>
             </th>
-                {% if user.is_superuser %}
-                    <th width="120px">
-                        <a href="{% url "control" %}">Control Panel</a>
-                    </th>
-                {% endif %}
+            {% if user.is_superuser %}
+                <th width="120px">
+                    <a href="{% url "control" %}">Control Panel</a>
+                </th>
+            {% endif %}
         </tr>
 
     </table>
     <hr>
 </div>
 
-{% if message %}
-    <p style="text-decoration-color: red">{{ message }}</p>
+{% if messages %}
+    {% for message in messages %}
+        <p>{{ message|linebreaks }}</p>
+    {% endfor %}
 {% endif %}
 
-{# Content #}
+
 <div>
     {% block content %}{% endblock %}
 </div>
-
-{# Footer #}
-{#<div style="padding-top: 20px">#}
-{#    <div>#}
-{#        <hr>#}
-{#        <p>Stomping on plagiarism since 20XX</p>#}
-{#    </div>#}
-{#</div>#}
 
 </body>
 </html>

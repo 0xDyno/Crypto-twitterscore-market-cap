@@ -57,8 +57,15 @@
                 {% endif %}
                 </td>
             </tr>
+            <tr>
+                <th colspan="2" style="padding: 40px;">
+                    Add New Coin (coingecko ID):
+                </th>
+                <td colspan="3">
+                    <input type="text" maxlength="60" name="{{ form.new_coin.name }}" style="width: 400px;">
+                </td>
+            </tr>
         </table>
-        <br>
         <input type="submit" value="Save" style="font-size: 1.05em; width: 100px;">
     </form>
 

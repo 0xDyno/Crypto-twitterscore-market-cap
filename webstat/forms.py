@@ -1,12 +1,16 @@
 from django import forms
 from django.core.validators import ValidationError
 
-from .models import DaemonModel
 
-
-class DaemonForm(forms.Form):
+class ControlForm(forms.Form):
     coins_update_status = forms.BooleanField(required=False)
     score_update_status = forms.BooleanField(required=False)
+    new_coin = forms.CharField(max_length=60, required=False)
+    
+    
+class CoinForm(forms.Form):
+    twitter = forms.CharField(max_length=15, required=False)
+    twitter_score = forms.IntegerField(min_value=0, required=False, label="Score")
 
 
 class FilterForm(forms.Form):

@@ -70,7 +70,7 @@
                 </table>
                 <table>
                     <tr>
-                        <td style="width: 250px; height: 40px;">Name contains:</td>
+                        <td style="width: 250px; height: 40px;">Name or Symbol:</td>
                         <td style="width: 250px; height: 40px;">Lines</td>
                         <td style="width: 250px; height: 40px;">Order by</td>
                     </tr>
@@ -205,13 +205,13 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if not coin.coefficient_mc is Null %}
-                            {{ coin.coefficient_mc|floatformat:2 }}
+                        {% if not coin.get_coeff_mc is Null %}
+                            {{ coin.get_coeff_mc|floatformat:2 }}
                         {% endif %}
                     </td>
                     <td>
-                        {% if not coin.coefficient_fdv is Null %}
-                            {{ coin.coefficient_fdv|floatformat:2 }}
+                        {% if not coin.get_coeff_fdv is Null %}
+                            {{ coin.get_coeff_fdv|floatformat:2 }}
                         {% endif %}
                     </td>
                     {% if user.is_superuser %}

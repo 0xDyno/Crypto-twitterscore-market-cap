@@ -9,13 +9,26 @@
     {% include "webstat/parts/coin_table.html" %}
 
     {% if user.is_superuser %}
-        <br>
+        <br><br>
         <form method="post">
             {% csrf_token %}
-            <input type="submit" value="Update">
-            <a href="{% url "delete" coin.pk %}" target="_blank">
-                <input type="button" value="Delete">
-            </a>
+
+            <table style="text-align: center;">
+                <tr>
+                    <th>
+                        Edit Form
+                    </th>
+                    <th>
+                        <input type="submit" value="Save">
+                    </th>
+                </tr>
+                {{ form.as_table }}
+            </table>
+
+            <br><br>
+            <a href="{% url "update" coin.pk %}" style="padding: 15px">Update</a>
+            <a href="{% url "delete" coin.pk %}" style="padding: 15px">Delete</a>
+
 
         </form>
     {% endif %}

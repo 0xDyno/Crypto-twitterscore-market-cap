@@ -91,13 +91,13 @@
             {% endif %}
         </td>
         <td>
-            {% if not coin.coefficient_mc is Null %}
-                {{ coin.coefficient_mc|floatformat:2 }}
+            {% if not coin.get_coeff_mc is Null %}
+                {{ coin.get_coeff_mc|floatformat:2 }}
             {% endif %}
         </td>
         <td>
-            {% if not coin.coefficient_fdv is Null %}
-                {{ coin.coefficient_fdv|floatformat:2 }}
+            {% if not coin.get_coeff_fdv is Null %}
+                {{ coin.get_coeff_fdv|floatformat:2 }}
             {% endif %}
         </td>
     </tr>
