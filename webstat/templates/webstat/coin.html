@@ -9,7 +9,6 @@
     {% include "webstat/parts/coin_table.html" %}
 
     {% if user.is_superuser %}
-        <br><br>
         <form method="post">
             {% csrf_token %}
 

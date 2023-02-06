@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Q
@@ -5,6 +7,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.urls import reverse
+from django.utils import timezone
 
 from .daemons import start_update_coin_daemon
 from .daemons import start_update_score_daemon
@@ -116,6 +119,7 @@ def stat_view(request):
 @staff_member_required
 def coin_view(request, pk):
     coin = get_object_or_404(CryptoModel, pk=pk)
+    
     initial = {
         "twitter": coin.twitter_id if coin.twitter_id is not None else "",
         "twitter_score": coin.twitter_score if coin.twitter_score is not None else 0,

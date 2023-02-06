@@ -38,6 +38,7 @@ def update_coins():
                 
                 try:
                     __update_coin_data(coin)
+                    print(f"Updated coin info for {coin.symbol}")
                 except ConnectionError as error:
                     message = "last error: " + error.__str__()
                     settings = DaemonModel.objects.get(pk=1)
@@ -46,7 +47,8 @@ def update_coins():
                     else:
                         settings.message = message[:300]
                     settings.save()
-                
+
+                coin.save()
                 sleep(15)
     
     except Exception as error:

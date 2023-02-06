@@ -65,8 +65,8 @@ class CryptoModel(models.Model):
         else:
             return None
         
-    @classmethod
-    def one_time(cls):
-        all = cls.objects.all()
-        for c in all:
-            pass
+    # @classmethod
+    # def one_time(cls):
+    #     all = cls.objects.all()
+    #     for c in all:
+    #         pass
