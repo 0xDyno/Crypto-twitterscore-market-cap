@@ -96,7 +96,7 @@ def get_list_from_last_coin(last_coin: str, all_coins):
     if last_coin:
         for i, coin in enumerate(all_coins):
             if coin.symbol == last_coin:
-                return all_coins[i:0]
+                return all_coins[i:]
     return all_coins
 
 
