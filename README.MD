@@ -7,7 +7,7 @@ Knowing info from CoinMarketCap or Coingecko we can filter all projects with big
 
 Coefficient MC - score / market cap
 
-Coefficient MC - score / FDV
+Coefficient FDV - score / FDV
 
 The higher score - the better ratio. It's useful also for filter tokens by market cap (min 1m/10m), volume (100k) etc..
 
