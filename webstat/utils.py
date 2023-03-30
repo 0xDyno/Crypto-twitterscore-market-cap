@@ -1,10 +1,13 @@
 import math
+from os import getenv
 from time import sleep
 
 import requests
-from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 
 from .models import CryptoModel
+
+load_dotenv()
 
 
 def convert_price(price) -> str:
@@ -147,18 +150,18 @@ def __get_twitter_score(twitter):
     if not twitter:
         return None
     
-    page = requests.get("https://twitterscore.io/twitter/" + twitter)
-    
-    if page.status_code != 200:
-        return None
-    
-    soup = BeautifulSoup(page.content, 'html.parser')
-    tag = soup.find("div", {"class": "progress"})
-    
-    try:
-        return int(tag.get('data-target'))
-    except ValueError:
-        return None
+    API = getenv("TWITTERSCORE_API")
+    link = f"https://twitterscore.io/api/v1/get_twitter_score?api_key={API}&username={twitter}"
+
+    data = requests.get(url=link)
+
+    if data.status_code == 200:
+        response = data.json()
+        if response.get("success"):
+            score = round(response.get("twitter_score"))
+            print(twitter, score)
+            return score
+    return None
 
 
 def __update_twitter_score(coin, score):

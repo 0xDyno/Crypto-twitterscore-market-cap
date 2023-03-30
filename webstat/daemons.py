@@ -29,6 +29,7 @@ def update_coins():
             last = DaemonModel.objects.get(pk=1).coins_current_update
             all_coins = CryptoModel.objects.all()
             coins = get_list_from_last_coin(last, all_coins)
+            coins = coins if len(coins) > 1 else all_coins  # check we're not in the loop with only 1 last coin
                 
             for coin in coins:
                 if not DaemonModel.objects.get(pk=1).coins_update_status:
@@ -69,8 +70,8 @@ def update_score():
             last = DaemonModel.objects.get(pk=1).score_current_update
             all_coins = CryptoModel.objects.all()
             coins = get_list_from_last_coin(last, all_coins)
-            
-            
+            coins = coins if len(coins) > 1 else all_coins      # check we're not in the loop with only 1 last coin
+
             for coin in coins:
                 if not DaemonModel.objects.get(pk=1).score_update_status:
                     break
