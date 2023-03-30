@@ -6,7 +6,9 @@ from time import sleep
 from .models import CryptoModel
 from .models import DaemonModel
 from .utils import __get_twitter_score
+from .utils import __get_twitter_score_changes
 from .utils import __update_twitter_score
+from .utils import __update_twitter_score_changes
 from .utils import __update_coin_data
 
 SCORE = "score"
@@ -85,8 +87,10 @@ def update_score():
                 settings.save()
 
                 score = __get_twitter_score(coin.twitter_id)
+                changes = __get_twitter_score_changes(coin.twitter_id)
                 
                 __update_twitter_score(coin, score)
+                __update_twitter_score_changes(coin, changes)
                 
                 coin.save()
                 

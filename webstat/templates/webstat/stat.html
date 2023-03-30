@@ -131,6 +131,9 @@
                     Score
                 </th>
                 <th>
+                    +/-
+                </th>
+                <th>
                     Coeff MC
                 </th>
                 <th>
@@ -203,6 +206,9 @@
                                 {{ coin.twitter_score }}
                             </a>
                         {% endif %}
+                    </td>
+                    <td>
+                        {{ coin.twitter_score_changes }}
                     </td>
                     <td>
                         {% if not coin.get_coeff_mc is Null %}

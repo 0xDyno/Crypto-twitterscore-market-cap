@@ -37,6 +37,7 @@ class CryptoModel(models.Model):
     
     twitter_id = models.CharField(max_length=15, null=True)
     twitter_score = models.IntegerField(null=True)
+    twitter_score_changes = models.CharField(max_length=5, blank=True)
     
     site = models.CharField(max_length=200, null=True)
     

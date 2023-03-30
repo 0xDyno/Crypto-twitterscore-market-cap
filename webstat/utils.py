@@ -91,6 +91,9 @@ def update_coin(coin):
     score = __get_twitter_score(coin.twitter_id)
     __update_twitter_score(coin, score)
     
+    changes = __get_twitter_score_changes(coin.twitter_id)
+    __update_twitter_score_changes(coin, changes)
+    
     coin.save()
     return True
 
@@ -146,7 +149,7 @@ def get_coin_data(coingecko_id):
     return content.json()
 
 
-def __get_twitter_score(twitter):
+def __get_twitter_score(twitter) -> int | None:
     if not twitter:
         return None
     
@@ -163,6 +166,23 @@ def __get_twitter_score(twitter):
     return None
 
 
+def __get_twitter_score_changes(twitter) -> str | None:
+    if not twitter:
+        return None
+    
+    API = getenv("TWITTERSCORE_API")
+    link = f"https://twitterscore.io/api/v1/get_twitter_scores_diff?api_key={API}&username={twitter}"
+    
+    data = requests.get(url=link)
+    
+    if data.status_code == 200:
+        response = data.json()
+        if response.get("success"):
+            changes = response.get("month").get("diff_str")
+            return changes
+    return None
+
+
 def __update_twitter_score(coin, score):
     if score is None:
         print(f"Got error when tried to parse score, twitter: {coin.twitter_id}, symbol: {coin.symbol}")
@@ -170,6 +190,18 @@ def __update_twitter_score(coin, score):
             coin.twitter_score = 0
     else:
         coin.twitter_score = score
+
+
+def __update_twitter_score_changes(coin, changes):
+    if changes is None:
+        print(f"Got error when tried to get score changes, twitter: {coin.twitter_id}, symbol: {coin.symbol}")
+    else:
+        try:
+            changed_on = int(changes)
+            if abs(changed_on) > 1:
+                coin.twitter_score_changes = changes
+        except ValueError as error:
+            print(f"- Got error: {error}\n- Changes: {changes}")
 
 
 def custom_sort(sort_type: str, crypto: list):
