@@ -159,7 +159,6 @@ def __get_twitter_score(twitter):
         response = data.json()
         if response.get("success"):
             score = round(response.get("twitter_score"))
-            print(twitter, score)
             return score
     return None
 
