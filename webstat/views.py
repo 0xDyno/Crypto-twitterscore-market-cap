@@ -1,5 +1,3 @@
-import datetime
-
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Q
@@ -7,7 +5,6 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils import timezone
 
 from .daemons import start_update_coin_daemon
 from .daemons import start_update_score_daemon
@@ -184,6 +181,8 @@ def control_view(request):
                 daemon.coins_update_status = coins_status
                 daemon.save()
                 if coins_status:
+                    daemon.coins_message = ""
+                    daemon.save()
                     start_update_coin_daemon()
 
             score_status = form.cleaned_data.get("score_update_status")
@@ -191,6 +190,8 @@ def control_view(request):
                 daemon.score_update_status = score_status
                 daemon.save()
                 if score_status:
+                    daemon.score_message = ""
+                    daemon.save()
                     start_update_score_daemon()
                     
             new_coin = form.cleaned_data.get("new_coin")
